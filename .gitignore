@@ -1,0 +1,14 @@
+# IDE and editor files.
+.idea/
+.vscode/
+
+# macOS finder garbage.
+.DS_Store
+
+# clangd related stuff.
+compile_commands.json
+compile_flags.txt
+.cache/
+
+# Build directory.
+build*/
