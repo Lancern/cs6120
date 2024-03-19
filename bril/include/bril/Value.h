@@ -1,12 +1,15 @@
 #pragma once
 
 #include <cstddef>
+#include <initializer_list>
 #include <list>
 #include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include "Type.h"
 
 namespace bril {
 
@@ -33,16 +36,16 @@ public:
     std::size_t user_operand_idx_;
   };
 
-  /// Construct a new value that does not have a name.
-  Value() noexcept = default;
-
   /// Construct a new value with the given name.
-  explicit Value(std::string name) noexcept;
+  Value(const Type *type, std::string name = "") noexcept;
 
   /// Get the name of this value.
   ///
   /// If this value does not have a name, this function returns an empty string.
   std::string_view getName() const noexcept { return name_; }
+
+  /// Get the type of this value.
+  const Type *getType() const noexcept { return type_; }
 
   /// Determine whether this value has any producers.
   bool hasProducers() const noexcept { return !producers_.empty(); }
@@ -72,6 +75,7 @@ public:
 
 private:
   std::string name_;
+  const Type *type_;
   std::list<Producer *> producers_;
   std::list<Use> uses_;
 };
@@ -115,9 +119,12 @@ public:
   /// Get a span of all the operands of this user.
   std::span<const Operand> getOperands() const noexcept { return operands_; }
 
+  /// Get the operand at the specified index.
+  const Operand &getOperand(std::size_t index) const noexcept;
+
 protected:
-  /// Construct a new User object. The user has the specified number of operands.
-  explicit User(std::size_t num_operands) noexcept;
+  explicit User(std::initializer_list<Value *> operand_values) noexcept;
+  explicit User(std::span<Value *const> operand_values) noexcept;
 
 private:
   std::vector<Operand> operands_;

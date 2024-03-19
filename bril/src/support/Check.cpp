@@ -12,4 +12,9 @@ namespace bril {
   std::abort();
 }
 
+[[noreturn]] void unreachableHandler(const char *file, int line, const char *func) {
+  std::cerr << "UNREACHABLE CODE REACHED: " << file << ":" << line << ": in " << func << std::endl;
+  std::abort();
+}
+
 }  // namespace bril

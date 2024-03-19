@@ -10,15 +10,15 @@ namespace bril {
 /// the two Type objects that represent the two types.
 class Type {
 public:
-  static const Type *getIntTy() noexcept;
-  static const Type *getBoolTy() noexcept;
-  static const Type *getPtrTy(const Type *pointee) noexcept;
+  static const Type *getIntType() noexcept;
+  static const Type *getBoolType() noexcept;
+  static const Type *getPtrType(const Type *pointee) noexcept;
 
   bool isInt() const noexcept { return isKind(TypeKind::Int); }
   bool isBool() const noexcept { return isKind(TypeKind::Bool); }
   bool isPtr() const noexcept { return isKind(TypeKind::Ptr); }
 
-  const Type *getPointeeTy() const noexcept;
+  const Type *getPointeeType() const noexcept;
 
 private:
   enum class TypeKind : std::uintptr_t {

@@ -13,17 +13,17 @@ constexpr std::uintptr_t PTR_MASK = ~static_cast<std::uintptr_t>(alignof(Type));
 
 }  // namespace
 
-const Type *Type::getIntTy() noexcept {
+const Type *Type::getIntType() noexcept {
   static const Type ty{TypeKind::Int};
   return &ty;
 }
 
-const Type *Type::getBoolTy() noexcept {
+const Type *Type::getBoolType() noexcept {
   static const Type ty{TypeKind::Bool};
   return &ty;
 }
 
-const Type *Type::getPtrTy(const Type *pointee) noexcept {
+const Type *Type::getPtrType(const Type *pointee) noexcept {
   static std::unordered_map<const Type *, Type> pointer_types;
 
   auto iter = pointer_types.find(pointee);
@@ -35,7 +35,7 @@ const Type *Type::getPtrTy(const Type *pointee) noexcept {
   return &iter->second;
 }
 
-const Type *Type::getPointeeTy() const noexcept {
+const Type *Type::getPointeeType() const noexcept {
   BRIL_CHECK(isPtr());
   return tag_;
 }
