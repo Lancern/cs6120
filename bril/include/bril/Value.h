@@ -1,0 +1,96 @@
+#pragma once
+
+#include <cstddef>
+#include <list>
+#include <ranges>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace bril {
+
+class User;
+
+/// The base type of all SSA values.
+class Value {
+public:
+  /// Represent a use of the value.
+  class Use {
+  public:
+    /// Get the user.
+    User *getUser() const noexcept { return user_; }
+
+    /// Get the index of the user's operand that uses the value.
+    std::size_t getUserOperandIndex() const noexcept { return user_operand_idx_; }
+
+  private:
+    Use(User *user, std::size_t user_operand_idx_) noexcept
+        : user_{user}, user_operand_idx_{user_operand_idx_} {}
+
+    User *user_;
+    std::size_t user_operand_idx_;
+  };
+
+  /// Get the name of this value.
+  ///
+  /// If this value does not have a name, this function returns an empty string.
+  std::string_view getName() const noexcept { return name_; }
+
+  /// Determine whether there are any uses of this value.
+  bool hasUses() const noexcept { return !uses_.empty(); }
+
+  /// Get the number of uses of this value.
+  std::size_t getNumUses() const noexcept { return uses_.size(); }
+
+  /// Get a view of all the uses of this value.
+  auto getUses() const noexcept {
+    auto iter_begin = uses_.begin();
+    auto iter_end = uses_.end();
+    return std::ranges::subrange(iter_begin, iter_end);
+  }
+
+protected:
+  /// Construct a new value that does not have a name.
+  Value() noexcept = default;
+
+  /// Construct a new value with the given name.
+  explicit Value(std::string name) noexcept;
+
+private:
+  std::string name_;
+  std::list<Use> uses_;
+};
+
+/// A user may use (i.e. depend on) multiple values.
+class User {
+public:
+  /// An operand of the user.
+  class Operand {
+  public:
+    /// Get the value this operand refers to.
+    Value *getValue() const noexcept { return value_; }
+
+  private:
+    Value *value_{nullptr};
+    std::list<Value::Use>::iterator value_use_iter_;
+  };
+
+  /// Determine whether this user has any operands.
+  bool hasOperands() const noexcept { return !operands_.empty(); }
+
+  /// Get the number of operands.
+  std::size_t getNumOperands() const noexcept { return operands_.size(); }
+
+  /// Get a span of all the operands of this user.
+  std::span<const Operand> getOperands() const noexcept { return operands_; }
+
+protected:
+  /// Construct a new User object. The user has the specified number of operands.
+  explicit User(std::size_t num_operands) noexcept;
+
+private:
+  std::vector<Operand> operands_;
+};
+
+}  // namespace bril

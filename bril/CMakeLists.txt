@@ -1,8 +1,10 @@
 set(bril_headers
     include/bril/Type.h
+    include/bril/Value.h
 )
 set(bril_sources
     src/Type.cpp
+    src/Value.cpp
     src/support/Check.cpp
     src/support/Check.h
 )
