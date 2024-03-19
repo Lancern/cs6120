@@ -10,9 +10,10 @@
 
 namespace bril {
 
+class Producer;
 class User;
 
-/// The base type of all SSA values.
+/// Represent a Bril SSA value.
 class Value {
 public:
   /// Represent a use of the value.
@@ -32,16 +33,35 @@ public:
     std::size_t user_operand_idx_;
   };
 
+  /// Construct a new value that does not have a name.
+  Value() noexcept = default;
+
+  /// Construct a new value with the given name.
+  explicit Value(std::string name) noexcept;
+
   /// Get the name of this value.
   ///
   /// If this value does not have a name, this function returns an empty string.
   std::string_view getName() const noexcept { return name_; }
 
+  /// Determine whether this value has any producers.
+  bool hasProducers() const noexcept { return !producers_.empty(); }
+
   /// Determine whether there are any uses of this value.
   bool hasUses() const noexcept { return !uses_.empty(); }
 
+  /// Get the number of producers of this value.
+  std::size_t getNumProducers() const noexcept { return producers_.size(); }
+
   /// Get the number of uses of this value.
   std::size_t getNumUses() const noexcept { return uses_.size(); }
+
+  /// Get a view of all the producers of this value.
+  auto getProducers() const noexcept {
+    auto iter_begin = producers_.begin();
+    auto iter_end = producers_.end();
+    return std::ranges::subrange(iter_begin, iter_end);
+  }
 
   /// Get a view of all the uses of this value.
   auto getUses() const noexcept {
@@ -50,18 +70,28 @@ public:
     return std::ranges::subrange(iter_begin, iter_end);
   }
 
-protected:
-  /// Construct a new value that does not have a name.
-  Value() noexcept = default;
-
-  /// Construct a new value with the given name.
-  explicit Value(std::string name) noexcept;
-
 private:
   std::string name_;
+  std::list<Producer *> producers_;
   std::list<Use> uses_;
 };
 
+/// Base class for all value producers.
+class Producer {
+public:
+  /// Construct a new Producer with the value it produces.
+  explicit Producer(Value *value) noexcept;
+
+  /// Get the value produced by this producer.
+  Value *getValue() const noexcept { return value_; }
+
+private:
+  Value *value_;
+  std::list<Producer *>::iterator value_producer_iter_;
+};
+
+/// Base class for all value users.
+///
 /// A user may use (i.e. depend on) multiple values.
 class User {
 public:
