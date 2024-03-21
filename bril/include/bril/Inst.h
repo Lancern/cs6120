@@ -1,17 +1,46 @@
 #pragma once
 
+#include <boost/intrusive/intrusive_fwd.hpp>
+#include <boost/intrusive/options.hpp>
+
 #include "Literal.h"
 #include "Value.h"
+
+namespace il = boost::intrusive;
 
 namespace bril {
 
 class Block;
+class CFG;
 class Function;
 
+struct BlockInstTag;
+
 /// Base class for all Bril instructions.
-class Inst {
+class Inst : il::list_base_hook<il::tag<BlockInstTag>> {
 public:
+  Inst(const Inst &) = delete;
+  Inst(Inst &&) = delete;
+
   virtual ~Inst() noexcept = default;
+
+  Inst &operator=(const Inst &) = delete;
+  Inst &operator=(Inst &&) = delete;
+
+  /// Get the block that this instruction has been added to.
+  Block *getBlock() const noexcept { return block_; }
+
+  /// Get the CFG that this instruction has been added to.
+  CFG *getCFG() const noexcept;
+
+  /// Get the function that this instruction has been added to.
+  Function *getFunction() const noexcept;
+
+protected:
+  Inst() noexcept = default;
+
+private:
+  Block *block_{nullptr};
 };
 
 /// Base class for all Bril instructions that produces a value.

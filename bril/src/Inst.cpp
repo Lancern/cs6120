@@ -1,11 +1,26 @@
 #include "bril/Inst.h"
 
+#include "bril/CFG.h"
 #include "bril/Literal.h"
 #include "bril/Type.h"
 #include "bril/Value.h"
 #include "support/Check.h"
 
 namespace bril {
+
+CFG *Inst::getCFG() const noexcept {
+  if (!block_) {
+    return nullptr;
+  }
+  return block_->getCFG();
+}
+
+Function *Inst::getFunction() const noexcept {
+  if (!block_) {
+    return nullptr;
+  }
+  return block_->getFunction();
+}
 
 ConstantInst::ConstantInst(Value *value, Literal lit) noexcept : ProducerInst{value}, lit_{lit} {
   BRIL_CHECK(value->getType() == lit.getType());

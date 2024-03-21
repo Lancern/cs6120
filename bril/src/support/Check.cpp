@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 
-namespace bril {
+namespace bril::sup {
 
 [[noreturn]] void checkFailHandler(const char *file, int line, const char *func,
                                    const char *condition) {
@@ -17,4 +17,4 @@ namespace bril {
   std::abort();
 }
 
-}  // namespace bril
+}  // namespace bril::sup
