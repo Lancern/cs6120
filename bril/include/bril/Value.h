@@ -2,42 +2,41 @@
 
 #include <cstddef>
 #include <initializer_list>
-#include <list>
+#include <memory>
 #include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/list_hook.hpp>
+#include <boost/intrusive/options.hpp>
+
 #include "Type.h"
+
+namespace il = boost::intrusive;
 
 namespace bril {
 
 class Producer;
+class Use;
 class User;
+
+class ValueProducerTag;
+class ValueUseTag;
 
 /// Represent a Bril SSA value.
 class Value {
 public:
-  /// Represent a use of the value.
-  class Use {
-  public:
-    /// Get the user.
-    User *getUser() const noexcept { return user_; }
-
-    /// Get the index of the user's operand that uses the value.
-    std::size_t getUserOperandIndex() const noexcept { return user_operand_idx_; }
-
-  private:
-    Use(User *user, std::size_t user_operand_idx_) noexcept
-        : user_{user}, user_operand_idx_{user_operand_idx_} {}
-
-    User *user_;
-    std::size_t user_operand_idx_;
-  };
-
   /// Construct a new value with the given name.
   Value(const Type *type, std::string name = "") noexcept;
+
+  Value(const Value &) = delete;
+  Value(Value &&) = delete;
+
+  Value &operator=(const Value &) = delete;
+  Value &operator=(Value &&) = delete;
 
   /// Get the name of this value.
   ///
@@ -73,25 +72,65 @@ public:
     return std::ranges::subrange(iter_begin, iter_end);
   }
 
+  friend class Producer;
+  friend class Use;
+
 private:
   std::string name_;
   const Type *type_;
-  std::list<Producer *> producers_;
-  std::list<Use> uses_;
+  il::list<Producer, il::base_hook<il::list_base_hook<il::tag<ValueProducerTag>>>> producers_;
+  il::list<Use, il::base_hook<il::list_base_hook<il::tag<ValueUseTag>>>> uses_;
 };
 
 /// Base class for all value producers.
-class Producer {
+class Producer : public il::list_base_hook<il::tag<ValueProducerTag>> {
 public:
-  /// Construct a new Producer with the value it produces.
-  explicit Producer(Value *value) noexcept;
+  Producer(const Producer &) = delete;
+  Producer(Producer &&) = delete;
+
+  Producer &operator=(const Producer &) = delete;
+  Producer &operator=(Producer &&) = delete;
 
   /// Get the value produced by this producer.
   Value *getValue() const noexcept { return value_; }
 
+protected:
+  /// Construct a new Producer with the value it produces.
+  explicit Producer(Value *value) noexcept;
+
+  ~Producer() noexcept;
+
 private:
   Value *value_;
-  std::list<Producer *>::iterator value_producer_iter_;
+};
+
+/// Represent a use of a value.
+class Use : public il::list_base_hook<il::tag<ValueUseTag>> {
+public:
+  /// Construct a new Use object.
+  Use(Value *value, User *user, std::size_t user_operand_idx_) noexcept;
+
+  Use(const Use &) = delete;
+  Use(Use &&) = delete;
+
+  ~Use() noexcept;
+
+  Use &operator=(const Use &) = delete;
+  Use &operator=(Use &&) = delete;
+
+  /// Get the value used.
+  Value *getValue() const noexcept { return value_; }
+
+  /// Get the user.
+  User *getUser() const noexcept { return user_; }
+
+  /// Get the index of the user's operand that uses the value.
+  std::size_t getUserOperandIndex() const noexcept { return user_operand_idx_; }
+
+private:
+  Value *value_;
+  User *user_;
+  std::size_t user_operand_idx_;
 };
 
 /// Base class for all value users.
@@ -99,35 +138,28 @@ private:
 /// A user may use (i.e. depend on) multiple values.
 class User {
 public:
-  /// An operand of the user.
-  class Operand {
-  public:
-    /// Get the value this operand refers to.
-    Value *getValue() const noexcept { return value_; }
-
-  private:
-    Value *value_{nullptr};
-    std::list<Value::Use>::iterator value_use_iter_;
-  };
-
   /// Determine whether this user has any operands.
   bool hasOperands() const noexcept { return !operands_.empty(); }
 
   /// Get the number of operands.
   std::size_t getNumOperands() const noexcept { return operands_.size(); }
 
-  /// Get a span of all the operands of this user.
-  std::span<const Operand> getOperands() const noexcept { return operands_; }
+  /// Get a view of all the operands of this user.
+  auto getOperands() const noexcept {
+    return std::views::all(operands_) |
+           std::views::transform(
+               [](const auto &operand) -> const auto & { return *operand.get(); });
+  }
 
   /// Get the operand at the specified index.
-  const Operand &getOperand(std::size_t index) const noexcept;
+  const Use &getOperand(std::size_t index) const noexcept;
 
 protected:
-  explicit User(std::initializer_list<Value *> operand_values) noexcept;
+  User(std::initializer_list<Value *> operand_values) noexcept;
   explicit User(std::span<Value *const> operand_values) noexcept;
 
 private:
-  std::vector<Operand> operands_;
+  std::vector<std::unique_ptr<Use>> operands_;
 };
 
 }  // namespace bril

@@ -9,6 +9,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # =========================================================
+# Add third-party dependencies to thd build.
+# =========================================================
+
+# We want Boost.Intrusive for an intrusive list implementation.
+# An older boost version might also work, not tested.
+find_package(Boost 1.84 REQUIRED)
+
+# =========================================================
 # Add cs6120 project targets.
 # =========================================================
 

@@ -1,5 +1,6 @@
 set(bril_headers
     include/bril/Inst.h
+    include/bril/Literal.h
     include/bril/Type.h
     include/bril/Value.h
 )
@@ -17,3 +18,4 @@ target_sources(bril
     PUBLIC FILE_SET HEADERS FILES ${bril_headers}
     PRIVATE ${bril_sources}
 )
+target_link_libraries(bril PUBLIC Boost::boost)
