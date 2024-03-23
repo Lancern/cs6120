@@ -21,7 +21,7 @@ class CFGBlockTag;
 /// A basic block within a CFG.
 ///
 /// A basic block owns all instructions that are added to the block.
-class Block : il::list_base_hook<il::tag<CFGBlockTag>> {
+class Block : public il::list_base_hook<il::tag<CFGBlockTag>> {
 public:
   Block() noexcept = default;
 
@@ -74,4 +74,4 @@ private:
   il::list<Block, il::base_hook<il::list_base_hook<il::tag<CFGBlockTag>>>> blocks_;
 };
 
-} // namespace bril
+}  // namespace bril

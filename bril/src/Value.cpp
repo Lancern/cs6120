@@ -16,14 +16,14 @@ Value::Value(const Type *type, std::string name) noexcept : name_(std::move(name
 
 Producer::Producer(Value *value) noexcept : value_{value} { value->producers_.push_back(*this); }
 
-Producer::~Producer() noexcept { value_->producers_.remove(*this); }
+Producer::~Producer() noexcept { value_->producers_.erase(value_->producers_.iterator_to(*this)); }
 
 Use::Use(Value *value, User *user, std::size_t user_operand_idx_) noexcept
     : value_{value}, user_{user}, user_operand_idx_{user_operand_idx_} {
   value->uses_.push_back(*this);
 }
 
-Use::~Use() noexcept { value_->uses_.remove(*this); }
+Use::~Use() noexcept { value_->uses_.erase(value_->uses_.iterator_to(*this)); }
 
 User::User(std::initializer_list<Value *> operand_values) noexcept
     : User(std::span<Value *const>(operand_values.begin(), operand_values.size())) {}

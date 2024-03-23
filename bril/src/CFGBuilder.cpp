@@ -31,7 +31,7 @@ void CFGBuilder::removeInst() noexcept {
     next_inst = &*next_inst_iter;
   }
 
-  ip_.block->inst_.remove(*ip_.inst);
+  ip_.block->inst_.erase(ip_.block->inst_.iterator_to(*ip_.inst));
   delete ip_.inst;
   ip_.inst = next_inst;
 }

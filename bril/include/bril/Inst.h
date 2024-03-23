@@ -17,7 +17,7 @@ class Function;
 struct BlockInstTag;
 
 /// Base class for all Bril instructions.
-class Inst : il::list_base_hook<il::tag<BlockInstTag>> {
+class Inst : public il::list_base_hook<il::tag<BlockInstTag>> {
 public:
   Inst(const Inst &) = delete;
   Inst(Inst &&) = delete;
