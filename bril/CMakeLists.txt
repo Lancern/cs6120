@@ -1,14 +1,17 @@
 set(bril_headers
     include/bril/CFG.h
     include/bril/CFGBuilder.h
+    include/bril/Function.h
     include/bril/Inst.h
     include/bril/Literal.h
     include/bril/Type.h
     include/bril/Value.h
+    include/bril/support/StringHash.h
 )
 set(bril_sources
     src/CFG.cpp
     src/CFGBuilder.cpp
+    src/Function.cpp
     src/Inst.cpp
     src/Type.cpp
     src/Value.cpp
