@@ -36,6 +36,8 @@ public:
   /// Get the function that this instruction has been added to.
   Function *getFunction() const noexcept;
 
+  friend class CFGBuilder;
+
 protected:
   Inst() noexcept = default;
 

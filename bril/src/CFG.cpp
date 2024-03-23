@@ -1,5 +1,7 @@
 #include "bril/CFG.h"
 
+#include "support/Check.h"
+
 namespace bril {
 
 Block::~Block() noexcept {
@@ -23,6 +25,11 @@ CFG::~CFG() noexcept {
     blocks_.pop_front();
     delete b;
   }
+}
+
+Block *CFG::getEntryBlock() const noexcept {
+  BRIL_CHECK(!blocks_.empty());
+  return const_cast<Block *>(&blocks_.front());
 }
 
 }  // namespace bril
