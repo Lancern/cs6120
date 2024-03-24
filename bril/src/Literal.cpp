@@ -11,9 +11,9 @@ Literal::Literal(bool value) noexcept : value_{std::in_place_type<bool>, value} 
 
 const Type *Literal::getType() const noexcept {
   if (isInt()) {
-    return Type::getIntTy();
+    return Type::getIntType();
   } else {
-    return Type::getBoolTy();
+    return Type::getBoolType();
   }
 }
 
