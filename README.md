@@ -8,6 +8,22 @@ in Cornell [CS6120]: Advanced Compilers.
 My implementation is written in Python since it's easy and convenient for a
 quick start, and it allows me to focus on the most important stuff.
 
+The implementation task of each lesson is placed under the subdirectory
+corresponding to the lesson. Each lesson subdirectory is a Python package that
+can be directly executed for testing.
+
+The `bril_utils` subdirectory contains a Python package that implements some
+common Bril utilities that are used across multiple lessons.
+
+The `bril` subdirectory is a git submodule that tracks the upstream
+`sampsyo/bril` repository. Make sure you have initialized and updated it after
+cloning the repo:
+
+```bash
+git submodule init
+git submodule update
+```
+
 > [!NOTE]
 > I'm still working on this course.
 
