@@ -5,3 +5,6 @@
 
 # Python caches.
 __pycache__
+
+# Python venv.
+venv/
