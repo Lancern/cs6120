@@ -8,3 +8,6 @@ __pycache__
 
 # Python venv.
 venv/
+
+# Any bril source files.
+*.bril
