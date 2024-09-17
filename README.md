@@ -27,6 +27,11 @@ git submodule update
 > [!NOTE]
 > I'm still working on this course.
 
+## Lessons and Topics
+
+- Lesson 2: representing programs
+- Lesson 3: Local Value Numbering (LVN) & Dead Code Elimination (DCE)
+
 ## License
 
 This work is open-source under the [MIT License](./LICENSE).
