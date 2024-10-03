@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from enum import auto, Enum
 from typing import Any, Dict, List
 
 from bril_utils.bb import Block, collect_blocks
@@ -33,6 +34,11 @@ class Lattice[T](ABC):
     def is_subset(self, subset: T, superset: T) -> bool: ...
 
 
+class DataFlowDirection(Enum):
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
 class DataFlowSolver[T]:
     """
     A generic data flow solver.
@@ -41,9 +47,15 @@ class DataFlowSolver[T]:
     objects of the Lattice class.
     """
 
-    def __init__(self, lattice: Lattice[T], func) -> None:
+    def __init__(
+        self,
+        lattice: Lattice[T],
+        func,
+        dir: DataFlowDirection = DataFlowDirection.FORWARD,
+    ) -> None:
         self._lattice = lattice
         self._func = func
+        self._dir = dir
 
         self._state_before_instr: Dict[Any, T] = {}
         self._state_after_instr: Dict[Any, T] = {}
@@ -72,6 +84,9 @@ class DataFlowSolver[T]:
         bb_list = collect_blocks(self._func["instrs"])
         cfg = CFG(bb_list)
 
+        if self._dir == DataFlowDirection.BACKWARD:
+            bb_list.reverse()
+
         converged = False
         while not converged:
             converged = True
@@ -80,31 +95,48 @@ class DataFlowSolver[T]:
                 converged = converged and not updated
 
     def _run_data_flow_on_bb(self, cfg: CFG, bb: Block) -> bool:
-        pred = cfg.get_predecessors(bb)
-        pred_exit_states = [self._state_after_bb[b] for b in pred]
+        if self._dir == DataFlowDirection.FORWARD:
+            get_predecessors = cfg.get_predecessors
+            state_before_bb = self._state_before_bb
+            state_after_bb = self._state_after_bb
+            state_before_instr = self._state_before_instr
+            state_after_instr = self._state_after_instr
+            bb_instrs = bb.insts
+        else:
+            get_predecessors = cfg.get_successors
+            state_before_bb = self._state_after_bb
+            state_after_bb = self._state_before_bb
+            state_before_instr = self._state_after_instr
+            state_after_instr = self._state_before_instr
+            bb_instrs = list(reversed(bb.insts))
 
-        def update_state_entry(state_dict, state_node, state) -> bool:
-            if state_node not in state_dict or not self._lattice.is_subset(
-                state, state_dict[state_node]
-            ):
-                state_dict[state_node] = state
-                return True
-            return False
+        pred = get_predecessors(bb)
+        pred_exit_states = [state_after_bb[b] for b in pred]
 
         curr_state = self._lattice.merge_many(*pred_exit_states)
 
-        if not update_state_entry(self._state_before_bb, bb, curr_state):
+        if not self._update_state_entry(state_before_bb, bb, curr_state):
             return False
 
-        self._state_before_bb[bb] = curr_state
-        for instr in bb.insts:
-            if not update_state_entry(self._state_before_instr, instr, curr_state):
+        state_before_bb[bb] = curr_state
+        for instr in bb_instrs:
+            if not self._update_state_entry(
+                state_before_instr, instr, curr_state
+            ):
                 return True
 
             curr_state = self._lattice.update(curr_state, instr)
 
-            if not update_state_entry(self._state_after_instr, instr, curr_state):
+            if not self._update_state_entry(state_after_instr, instr, curr_state):
                 return True
 
-        update_state_entry(self._state_after_bb, bb, curr_state)
+        self._update_state_entry(state_after_bb, bb, curr_state)
         return True
+
+    def _update_state_entry(self, state_dict, state_node, state) -> bool:
+        if state_node not in state_dict or not self._lattice.is_subset(
+            state, state_dict[state_node]
+        ):
+            state_dict[state_node] = state
+            return True
+        return False

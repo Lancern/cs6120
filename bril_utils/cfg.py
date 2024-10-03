@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 class CFG:
     def __init__(self, bb_list: List["Block"]) -> None:
         assert len(bb_list) > 0
-        self._bb_list = bb_list
+        self._bb_list = list(bb_list)
 
         self._bb_name: Dict[str, "Block"] = {}
         self._bb_succ: Dict["Block", List["Block"]] = {}
