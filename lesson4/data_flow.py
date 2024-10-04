@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from bril_utils.bb import Block, collect_blocks
 from bril_utils.cfg import CFG
+from bril_utils.collections.object_map import ObjectMap
 
 
 class Lattice[T](ABC):
@@ -57,10 +58,10 @@ class DataFlowSolver[T]:
         self._func = func
         self._dir = dir
 
-        self._state_before_instr: Dict[Any, T] = {}
-        self._state_after_instr: Dict[Any, T] = {}
-        self._state_before_bb: Dict[Block, T] = {}
-        self._state_after_bb: Dict[Block, T] = {}
+        self._state_before_instr: ObjectMap[Any, T] = ObjectMap()
+        self._state_after_instr: ObjectMap[Any, T] = ObjectMap()
+        self._state_before_bb: ObjectMap[Block, T] = ObjectMap()
+        self._state_after_bb: ObjectMap[Block, T] = ObjectMap()
 
         self._run_data_flow()
 

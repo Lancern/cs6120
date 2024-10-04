@@ -1,5 +1,7 @@
 from typing import Dict, List, TYPE_CHECKING
 
+from .collections.object_map import ObjectMap
+
 if TYPE_CHECKING:
     from .bb import Block
 
@@ -10,8 +12,8 @@ class CFG:
         self._bb_list = list(bb_list)
 
         self._bb_name: Dict[str, "Block"] = {}
-        self._bb_succ: Dict["Block", List["Block"]] = {}
-        self._bb_pred: Dict["Block", List["Block"]] = {}
+        self._bb_succ: ObjectMap["Block", List["Block"]] = ObjectMap()
+        self._bb_pred: ObjectMap["Block", List["Block"]] = ObjectMap()
 
         def add_cfg_edge(from_bb: "Block", to_bb: "Block"):
             self._bb_succ[from_bb].append(to_bb)
